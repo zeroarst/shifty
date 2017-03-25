@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Module: token</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Module: token</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        
+            
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+            <div class="description"><p>This module adds string interpolation support to Shifty.  It &quot;just works;&quot;
+it does not expose a public API.</p>
+<p>The Token extension allows Shifty to tween numbers inside of strings.  Among
+other things, this allows you to animate CSS properties.  For example, you
+can do this:</p>
+<pre class="prettyprint source"><code>import { tween } from 'shifty';
+
+tween({
+  from: { transform: 'translateX(45px)' },
+  to: { transform: 'translateX(90xp)' }
+});</code></pre><p><code>translateX(45)</code> will be tweened to <code>translateX(90)</code>.  To demonstrate:</p>
+<pre class="prettyprint source"><code>tween({
+  from: { transform: 'translateX(45px)' },
+  to: { transform: 'translateX(90px)' },
+  step: state => console.log(state.transform)
+});</code></pre><p>The above snippet will log something like this in the console:</p>
+<pre class="prettyprint source"><code>translateX(60.3px)
+...
+translateX(76.05px)
+...
+translateX(90px)</code></pre><p>Another use for this is animating colors:</p>
+<pre class="prettyprint source"><code>tween({
+  from: { color: 'rgb(0,255,0)' },
+  to: { color: 'rgb(255,0,255)' },
+  step: state => console.log(state.color)
+});</code></pre><p>The above snippet will log something like this:</p>
+<pre class="prettyprint source"><code>rgb(84,170,84)
+...
+rgb(170,84,170)
+...
+rgb(255,0,255)</code></pre><p>This extension also supports hexadecimal colors, in both long (<code>#ff00ff</code>)
+and short (<code>#f0f</code>) forms.  Be aware that hexadecimal input values will be
+converted into the equivalent RGB output values.  This is done to optimize
+for performance.</p>
+<pre class="prettyprint source"><code>tween({
+  from: { color: '#0f0' },
+  to: { color: '#f0f' },
+  step: state => console.log(state.color)
+});</code></pre><p>This snippet will generate the same output as the one before it because
+equivalent values were supplied (just in hexadecimal form rather than RGB):</p>
+<pre class="prettyprint source"><code>rgb(84,170,84)
+...
+rgb(170,84,170)
+...
+rgb(255,0,255)</code></pre><h2>Easing support</h2><p>Easing works somewhat differently in the Token extension.  This is because
+some CSS properties have multiple values in them, and you might need to
+tween each value along its own easing curve.  A basic example:</p>
+<pre class="prettyprint source"><code>tween({
+  from: { transform: 'translateX(0px) translateY(0px)' },
+  to: { transform:   'translateX(100px) translateY(100px)' },
+  easing: { transform: 'easeInQuad' },
+  step: state => console.log(state.transform)
+});</code></pre><p>The above snippet will create values like this:</p>
+<pre class="prettyprint source"><code>translateX(11.56px) translateY(11.56px)
+...
+translateX(46.24px) translateY(46.24px)
+...
+translateX(100px) translateY(100px)</code></pre><p>In this case, the values for <code>translateX</code> and <code>translateY</code> are always the
+same for each step of the tween, because they have the same start and end
+points and both use the same easing curve.  We can also tween <code>translateX</code>
+and <code>translateY</code> along independent curves:</p>
+<pre class="prettyprint source"><code>tween({
+  from: { transform: 'translateX(0px) translateY(0px)' },
+  to: { transform:   'translateX(100px) translateY(100px)' },
+  easing: { transform: 'easeInQuad bounce' },
+  step: state => console.log(state.transform)
+});</code></pre><p>The above snippet will create values like this:</p>
+<pre class="prettyprint source"><code>translateX(10.89px) translateY(82.35px)
+...
+translateX(44.89px) translateY(86.73px)
+...
+translateX(100px) translateY(100px)</code></pre><p><code>translateX</code> and <code>translateY</code> are not in sync anymore, because <code>easeInQuad</code>
+was specified for <code>translateX</code> and <code>bounce</code> for <code>translateY</code>.  Mixing and
+matching easing curves can make for some interesting motion in your
+animations.</p>
+<p>The order of the space-separated easing curves correspond the token values
+they apply to.  If there are more token values than easing curves listed,
+the last easing curve listed is used.</p></div>
+        
+
+        
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="token.js.html">token.js</a>, <a href="token.js.html#line1">line 1</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+    </div>
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-token.html">token</a></li></ul><h3>Classes</h3><ul><li><a href="shifty.Tweenable.html">shifty.Tweenable</a></li></ul><h3>Namespaces</h3><ul><li><a href="shifty.html">shifty</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Sat Mar 25 2017 11:39:43 GMT-0500 (CDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
