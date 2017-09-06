@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>interpolate.js - Documentation</title>
+    <title>Getting Started - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,90 +29,47 @@
 
 <div id="main">
     
-    <h1 class="page-title">interpolate.js</h1>
+    <h1 class="page-title">Getting Started</h1>
     
 
-    
-
-
-
-    
     <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>import { Tweenable, clone, composeEasingObject, tweenProps } from './tweenable';
 
-// Fake a Tweenable and patch some internals.  This approach allows us to
-// skip uneccessary processing and object recreation, cutting down on garbage
-// collection pauses.
-const mockTweenable = new Tweenable();
-mockTweenable._filterArgs = [];
+<header>
+    
+</header>
 
-/**
- * Compute the midpoint of two Objects.  This method effectively calculates a
- * specific frame of animation that {@link shifty.Tweenable#tween} does many times
- * over the course of a full tween.
- *
- *     import { interpolate } from 'shifty';
- *
- *     const interpolatedValues = interpolate({
- *         width: '100px',
- *         opacity: 0,
- *         color: '#fff'
- *       }, {
- *         width: '200px',
- *         opacity: 1,
- *         color: '#000'
- *       },
- *       0.5
- *     );
- *
- *     console.log(interpolatedValues);
- *     // {opacity: 0.5, width: "150px", color: "rgb(127,127,127)"}
- *
- * @method shifty.interpolate
- * @param {Object} from The starting values to tween from.
- * @param {Object} to The ending values to tween to.
- * @param {number} position The normalized position value (between `0.0` and
- * `1.0`) to interpolate the values between `from` and `to` for.  `from`
- * represents `0` and `to` represents `1`.
- * @param {Object.&lt;string|shifty.easingFunction>|string|shifty.easingFunction}
- * easing The easing curve(s) to calculate the midpoint against.  You can
- * reference any easing function attached to {@link shifty.Tweenable.formulas},
- * or provide the {@link shifty.easingFunction}(s) directly.  If omitted, this
- * defaults to "linear".
- * @param {number} [delay=0] Optional delay to pad the beginning of the
- * interpolated tween with.  This increases the range of `position` from (`0`
- * through `1`) to (`0` through `1 + delay`).  So, a delay of `0.5` would
- * increase all valid values of `position` to numbers between `0` and `1.5`.
- * @return {Object}
- */
-export const interpolate =
-  (from, to, position, easing, delay = 0) => {
+<article>
+    <h2>Creating a tween</h2><p>This simplest way create a tween is to use <a href="shifty.html#.tween"><code>shifty.tween</code></a>:</p>
+<pre class="prettyprint source lang-javascript"><code>import { tween } from 'shifty';
 
-  const current = clone(from);
-  const easingObject = composeEasingObject(from, easing);
+tween({
+  from: { x: 0, y: 50 },
+  to: { x: 10, y: -30 },
+  duration: 1500,
+  easing: 'easeOutQuad',
+  step: state => console.log(state)
+}).then(
+  () => console.log('All done!')
+);</code></pre><p>You can also instantiate a <a href="shifty.Tweenable.html"><code>shifty.Tweenable</code></a> to reuse tweens and have
+more control over the animation:</p>
+<pre class="prettyprint source lang-javascript"><code>import { Tweenable } from 'shifty';
 
-  mockTweenable.set({});
-  mockTweenable._filterArgs = [current, from, to, easingObject];
+const tweenable = new Tweenable();
 
-  // Any defined value transformation must be applied
-  mockTweenable._applyFilter('tweenCreated');
-  mockTweenable._applyFilter('beforeTween');
+tweenable.setConfig({
+  from: { x: 0,  y: 50  },
+  to: { x: 10, y: -30 },
+  duration: 1500,
+  easing: 'easeOutQuad',
+  step: state => console.log(state)
+});
 
-  const interpolatedValues =
-    tweenProps(position, current, from, to, 1, delay, easingObject);
+// tweenable.tween() could be called again later
+tweenable.tween().then(() => console.log('All done!'));</code></pre><p><p data-height="350" data-theme-id="0" data-slug-hash="vJMjWK" data-default-tab="js,result" data-user="jeremyckahn" data-embed-version="2" data-pen-title="Shifty - Playground" class="codepen">See the Pen <a href="https://codepen.io/jeremyckahn/pen/vJMjWK/">Shifty - Playground</a> by Jeremy Kahn (<a href="https://codepen.io/jeremyckahn">@jeremyckahn</a>) on <a href="https://codepen.io">CodePen</a>.</p></p>
+<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+</article>
 
-  // Transform data in interpolatedValues back into its original format
-  mockTweenable._applyFilter('afterTween');
-
-  return interpolatedValues;
-};
-</code></pre>
-        </article>
-    </section>
-
-
-
+</section>
 
 </div>
 
