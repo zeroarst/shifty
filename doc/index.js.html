@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Easing Curves in Depth - Documentation</title>
+    <title>index.js - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -29,69 +29,132 @@
 
 <div id="main">
     
-    <h1 class="page-title">Easing Curves in Depth</h1>
+    <h1 class="page-title">index.js</h1>
     
 
+    
+
+
+
+    
     <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @namespace shifty
+ */
 
-<header>
-    
-</header>
+import { Tweenable, tween } from './tweenable';
+import * as token from './token';
 
-<article>
-    <p>Shifty supports a number of easing formulas, which you can see in
-<a href="easing-functions.js.html"><code>easing-functions.js</code></a>.  You can add new easing
-formulas by attaching methods to <a href="shifty.Tweenable.html#.formulas"><code>shifty.Tweenable.formulas</code></a>.</p>
-<h2>Using multiple easing formulas</h2><p>Shifty supports tweens that have different easing formulas for each property.
-Having multiple easing formulas on a single tween can make for some really
-interesting animations, because you aren't constrained to moving things in a
-straight line.  You can make curves!  To do this, simply supply <code>easing</code> as an
-Object, rather than a string:</p>
-<pre class="prettyprint source lang-javascript"><code>tween({
-  from: {
-    x: 0,
-    y: 0
-  },
-  to: {
-    x: 250,
-    y: 150
-  },
-  easing: {
-    x: 'swingFromTo',
-    y: 'bounce'
-  }
-});</code></pre><p><a href="shifty.html#.interpolate"><code>shifty.interpolate</code></a> also supports both string and object parameters for
-<code>easing</code>.</p>
-<h2>Per-tween custom easing functions</h2><p>You are not limited to attaching functions to <a href="shifty.Tweenable.html#.formulas"><code>shifty.Tweenable.formulas</code></a>.  You can also supply a custom easing function
-directly to <a href="shifty.html#.tween"><code>shifty.tween</code></a>:</p>
-<pre class="prettyprint source lang-javascript"><code>tween({
-  from: {
-    x: 0,
-    y: 0
-  },
-  to: {
-    x: 250,
-    y: 150
-  },
-  easing: pos => Math.pow(pos, 3)
-});</code></pre><p>Or even an Object of mixed strings and functions:</p>
-<pre class="prettyprint source lang-javascript"><code>tween({
-  from: {
-    x: 0,
-    y: 0
-  },
-  to: {
-    x: 250,
-    y: 150
-  },
-  easing: {
-    x: pos => Math.pow(pos, 3),
-    y: 'linear'
-  }
-});</code></pre>
-</article>
+Tweenable.filters.token = token;
 
-</section>
+export { Tweenable, tween };
+export { interpolate } from './interpolate';
+export { setBezierFunction, unsetBezierFunction } from './bezier';
+
+/**
+ * @external Promise
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise}
+ */
+
+/**
+ * @callback {Function} shifty.easingFunction
+ * @param {number} position The normalized (0-1) position of the tween.
+ * @return {number} The curve-adjusted value.
+ */
+
+/**
+ * @callback {Function} shifty.startFunction
+ * @param {Object} state The current state of the tween.
+ * @param {Object} [attachment] Cached data provided from a {@link
+ * shifty.tweenConfig}.
+ */
+
+/**
+ * Gets called for every tick of the tween.  This function is not called on the
+ * final step of the animation.
+ * @callback {Function} shifty.stepFunction
+ * @param {Object} state The current state of the tween.
+ * @param {Object|undefined} attachment Cached data provided from a {@link
+ * shifty.tweenConfig}.
+ * @param {number} timeElapsed The time elapsed since the start of the tween.
+ */
+
+/**
+ * @typedef {Object} shifty.tweenConfig
+ * @property {Object} [from] Starting position.  If omitted, {@link
+ * shifty.Tweenable#get} is used.
+ * @property {Object} [to] Ending position.  The keys of this Object should
+ * match those of `to`.
+ * @property {number} [duration] How many milliseconds to animate for.
+ * @property {number} [delay] How many milliseconds to wait before starting the
+ * tween.
+ * @property {shifty.startFunction} [start] Executes when the tween begins.
+ * @property {shifty.stepFunction} [step] Executes on every tick.
+ * @property
+ * {Object.&lt;string|shifty.easingFunction>|string|shifty.easingFunction}
+ * [easing] Easing curve name(s) or {@link shifty.easingFunction}(s) to apply
+ * to the properties of the tween.  If this is an Object, the keys should
+ * correspond to `to`/`from`.  You can learn more about this in the {@tutorial
+ * easing-function-in-depth} tutorial.
+ * @property {Object} [attachment] Cached value that is passed to {@link
+ * shifty.startFunction}/{@link shifty.stepFunction}.
+ * @property {Function} [promise] Promise constructor for when you want
+ * to use Promise library or polyfill Promises in unsupported environments.
+ */
+
+/**
+ * Is called when a tween is created.  This should convert all of the
+ * properties of each of its arguments to `Numbers`.
+ * @callback {Function} shifty.tweenCreatedFilter
+ * @param {Object} currentState Gets directly mutated by this function.
+ * @param {Object} fromState Gets directly mutated by this function.
+ * @param {Object} toState Gets directly mutated by this function.
+ */
+
+/**
+ * Is called right before a tween starts.  This should convert all of the
+ * properties of each of `currentState`, `fromState`, and `toState` to
+ * `Numbers`.
+ * @callback {Function} shifty.beforeTweenFilter
+ * @param {Object} currentState Gets directly mutated by this function.
+ * @param {Object} fromState Gets directly mutated by this function.
+ * @param {Object} toState Gets directly mutated by this function.
+ * @param {Object.&lt;string|shifty.easingFunction>} easingObject The `easing`
+ * that was passed to {@link shifty.Tweenable#setConfig}.
+ */
+
+/**
+ * Is called right after a tween ends.  This should convert all of the
+ * properties of each of `currentState`, `fromState`, and `toState` to
+ * `Numbers`.
+ * @callback {Function} shifty.afterTweenFilter
+ * @param {Object} currentState Gets directly mutated by this function.
+ * @param {Object} fromState Gets directly mutated by this function.
+ * @param {Object} toState Gets directly mutated by this function.
+ * @param {Object.&lt;string|shifty.easingFunction>} easingObject The `easing`
+ * that was passed to {@link shifty.Tweenable#setConfig}.
+ */
+
+/**
+ * An Object that contains functions that called at key points in a tween's
+ * lifecycle.  Shifty can only process `Number`s internally, but filters can
+ * expand support for any type of data.  This is the mechanism that powers
+ * [string interpolation]{@tutorial string-interpolation}.
+ * @typedef {Object} shifty.filter
+ * @property {shifty.tweenCreatedFilter} tweenCreated Is called when a tween is
+ * created.
+ * @property {shifty.beforeTweenFilter} beforeTween Is called right before a
+ * tween starts.
+ * @property {shifty.afterTweenFilter} afterTween Is called right after a tween
+ * ends.
+ */
+</code></pre>
+        </article>
+    </section>
+
+
+
 
 </div>
 
