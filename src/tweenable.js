@@ -111,14 +111,14 @@ export const composeEasingObject = (
   return composedEasing;
 };
 
-const processTween = (tween, now) => {
+const processTween = (tween, currentTime) => {
   const { _currentState, _delay } = tween;
   let { _duration, _step, _targetState, _timestamp } = tween;
 
   const endTime = _timestamp + _delay + _duration;
-  let currentTime = Math.min(now, endTime);
-  const hasEnded = currentTime >= endTime;
-  const offset = _duration - (endTime - currentTime);
+  let timeToCompute = Math.min(currentTime, endTime);
+  const hasEnded = timeToCompute >= endTime;
+  const offset = _duration - (endTime - timeToCompute);
 
   if (hasEnded) {
     _step(_targetState, tween._attachment, offset);
@@ -129,8 +129,8 @@ const processTween = (tween, now) => {
     // If the animation has not yet reached the start point (e.g., there was
     // delay that has not yet completed), just interpolate the starting
     // position of the tween.
-    if (currentTime < _timestamp + _delay) {
-      currentTime = 1;
+    if (timeToCompute < _timestamp + _delay) {
+      timeToCompute = 1;
       _duration = 1;
       _timestamp = 1;
     } else {
@@ -138,7 +138,7 @@ const processTween = (tween, now) => {
     }
 
     tweenProps(
-      currentTime,
+      timeToCompute,
       _currentState,
       tween._originalState,
       _targetState,
