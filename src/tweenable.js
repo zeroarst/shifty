@@ -164,6 +164,10 @@ export class Tweenable {
    * @private
    */
   _timeoutHandler(currentTimeOverride) {
+    if (!this.isPlaying()) {
+      return;
+    }
+
     const { _currentState, _delay } = this;
     let { _duration, _step, _targetState, _timestamp } = this;
 
@@ -172,46 +176,44 @@ export class Tweenable {
     const hasEnded = currentTime >= endTime;
     const offset = _duration - (endTime - currentTime);
 
-    if (this.isPlaying()) {
-      if (hasEnded) {
-        _step(_targetState, this._attachment, offset);
-        this.stop(true);
+    if (hasEnded) {
+      _step(_targetState, this._attachment, offset);
+      this.stop(true);
+    } else {
+      // This function needs to be .call-ed because it is a native method in
+      // some environments:
+      // http://stackoverflow.com/a/9678166
+      this._scheduleId = this._scheduleFunction.call(
+        root,
+        () => this._timeoutHandler(...arguments),
+        UPDATE_TIME
+      );
+
+      this._applyFilter('beforeTween');
+
+      // If the animation has not yet reached the start point (e.g., there was
+      // delay that has not yet completed), just interpolate the starting
+      // position of the tween.
+      if (currentTime < _timestamp + _delay) {
+        currentTime = 1;
+        _duration = 1;
+        _timestamp = 1;
       } else {
-        // This function needs to be .call-ed because it is a native method in
-        // some environments:
-        // http://stackoverflow.com/a/9678166
-        this._scheduleId = this._scheduleFunction.call(
-          root,
-          () => this._timeoutHandler(...arguments),
-          UPDATE_TIME
-        );
-
-        this._applyFilter('beforeTween');
-
-        // If the animation has not yet reached the start point (e.g., there was
-        // delay that has not yet completed), just interpolate the starting
-        // position of the tween.
-        if (currentTime < _timestamp + _delay) {
-          currentTime = 1;
-          _duration = 1;
-          _timestamp = 1;
-        } else {
-          _timestamp += _delay;
-        }
-
-        tweenProps(
-          currentTime,
-          _currentState,
-          this._originalState,
-          _targetState,
-          _duration,
-          _timestamp,
-          this._easing
-        );
-
-        this._applyFilter('afterTween');
-        _step(_currentState, this._attachment, offset);
+        _timestamp += _delay;
       }
+
+      tweenProps(
+        currentTime,
+        _currentState,
+        this._originalState,
+        _targetState,
+        _duration,
+        _timestamp,
+        this._easing
+      );
+
+      this._applyFilter('afterTween');
+      _step(_currentState, this._attachment, offset);
     }
   }
 
