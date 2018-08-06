@@ -154,7 +154,7 @@ const processTween = (tween, currentTime) => {
 
 /* eslint-disable no-unused-vars */
 export const processQueue = () => {
-  const now = Tweenable.now();
+  const currentTime = Tweenable.now();
 
   for (let i = tweenQueue.length; i > 0; i--) {
     const tween = tweenQueue[i - 1];
@@ -163,7 +163,7 @@ export const processQueue = () => {
       continue;
     }
 
-    processTween(tween, now);
+    processTween(tween, currentTime);
   }
 };
 /* eslint-enable no-unused-vars */
@@ -343,14 +343,16 @@ export class Tweenable {
    * @return {external:Promise}
    */
   resume() {
+    const currentTime = Tweenable.now();
+
     if (this._isPaused) {
-      this._timestamp += Tweenable.now() - this._pausedAtTime;
+      this._timestamp += currentTime - this._pausedAtTime;
     }
 
     this._isPaused = false;
     this._isTweening = true;
-    // this.timeoutHandler();
     tweenQueue.unshift(this);
+    processTween(this, currentTime);
 
     return this._promise;
   }
