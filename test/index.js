@@ -30,6 +30,10 @@ describe('shifty', () => {
     });
 
     afterEach(() => {
+      if (tweenable.isPlaying()) {
+        tweenable.stop();
+      }
+
       tweenable = undefined;
       state = undefined;
       Tweenable.now = now;
