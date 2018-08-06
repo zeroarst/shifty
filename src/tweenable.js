@@ -26,6 +26,8 @@ const DEFAULT_SCHEDULE_FUNCTION =
 
 const noop = () => {};
 
+const tweenQueue = [];
+
 const formulas = { ...easingFunctions };
 
 /**
@@ -116,6 +118,59 @@ export const composeEasingObject = (
 
   return composedEasing;
 };
+
+/* eslint-disable no-unused-vars */
+const processQueue = () => {
+  const now = Tweenable.now();
+
+  for (let i = tweenQueue.length; i >= 0; i--) {
+    const tween = tweenQueue[i];
+
+    if (!tween.isPlaying()) {
+      continue;
+    }
+
+    const { _currentState, _delay } = tween;
+    let { _duration, _step, _targetState, _timestamp } = tween;
+
+    const endTime = _timestamp + _delay + _duration;
+    let currentTime = Math.min(now, endTime);
+    const hasEnded = currentTime >= endTime;
+    const offset = _duration - (endTime - currentTime);
+
+    if (hasEnded) {
+      _step(_targetState, tween._attachment, offset);
+      tween.stop(true);
+    } else {
+      tween._applyFilter('beforeTween');
+
+      // If the animation has not yet reached the start point (e.g., there was
+      // delay that has not yet completed), just interpolate the starting
+      // position of the tween.
+      if (currentTime < _timestamp + _delay) {
+        currentTime = 1;
+        _duration = 1;
+        _timestamp = 1;
+      } else {
+        _timestamp += _delay;
+      }
+
+      tweenProps(
+        currentTime,
+        _currentState,
+        tween._originalState,
+        _targetState,
+        _duration,
+        _timestamp,
+        tween._easing
+      );
+
+      tween._applyFilter('afterTween');
+      _step(_currentState, tween._attachment, offset);
+    }
+  }
+};
+/* eslint-enable no-unused-vars */
 
 export class Tweenable {
   /**
@@ -374,6 +429,8 @@ export class Tweenable {
       this._isTweening = true;
       this._isPaused = false;
 
+      // FIXME: This breaks queueing/batching. Switch to shifting the _timestamp back.
+      //
       // If the animation is not running, call _timeoutHandler to make sure that
       // any step handlers are run.
       this._timeoutHandler(currentTime);
