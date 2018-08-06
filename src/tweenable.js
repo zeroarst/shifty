@@ -6,14 +6,6 @@ const DEFAULT_DURATION = 500;
 const UPDATE_TIME = 1000 / 60;
 const root = typeof window !== 'undefined' ? window : global;
 
-const cancelTimer =
-  root.cancelAnimationFrame ||
-  root.webkitCancelAnimationFrame ||
-  root.oCancelAnimationFrame ||
-  root.msCancelAnimationFrame ||
-  root.mozCancelRequestAnimationFrame ||
-  root.clearTimeout;
-
 // requestAnimationFrame() shim by Paul Irish (modified for Shifty)
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 const DEFAULT_SCHEDULE_FUNCTION =
@@ -120,7 +112,7 @@ export const composeEasingObject = (
 };
 
 /* eslint-disable no-unused-vars */
-const processQueue = () => {
+export const processQueue = () => {
   const now = Tweenable.now();
 
   for (let i = tweenQueue.length; i > 0; i--) {
@@ -417,7 +409,6 @@ export class Tweenable {
 
     const index = tweenQueue.indexOf(this);
     tweenQueue.splice(index, 1);
-    // cancelTimer(this._scheduleId);
 
     if (gotoEnd) {
       this._applyFilter('beforeTween');
