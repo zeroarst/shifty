@@ -10,7 +10,7 @@ import {
   unsetBezierFunction,
 } from '../src';
 
-import { processQueue } from '../src/tweenable';
+import { processQueue, timeoutHandler } from '../src/tweenable';
 
 import * as shifty from '../src';
 
@@ -408,7 +408,7 @@ describe('shifty', () => {
           });
 
           Tweenable.now = () => 500;
-          processQueue();
+          timeoutHandler();
           tweenable.stop(true);
 
           assert(

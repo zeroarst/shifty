@@ -8,7 +8,7 @@ const root = typeof window !== 'undefined' ? window : global;
 
 // requestAnimationFrame() shim by Paul Irish (modified for Shifty)
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
-const DEFAULT_SCHEDULE_FUNCTION =
+let scheduleFunction =
   root.requestAnimationFrame ||
   root.webkitRequestAnimationFrame ||
   root.oRequestAnimationFrame ||
@@ -174,8 +174,8 @@ export const processQueue = () => {
  * shifty.Tweenable#seek.
  * @private
  */
-const timeoutHandler = () => {
-  DEFAULT_SCHEDULE_FUNCTION.call(root, timeoutHandler, UPDATE_TIME);
+export const timeoutHandler = () => {
+  scheduleFunction.call(root, timeoutHandler, UPDATE_TIME);
 
   processQueue();
 };
@@ -192,7 +192,6 @@ export class Tweenable {
   constructor(initialState = {}, config = undefined) {
     this._currentState = initialState;
     this._configured = false;
-    this._scheduleFunction = DEFAULT_SCHEDULE_FUNCTION;
 
     // To prevent unnecessary calls to setConfig do not set default
     // configuration here.  Only set default configuration immediately before
@@ -443,19 +442,12 @@ export class Tweenable {
    */
 
   /**
-   * Set a custom schedule function.
-   *
-   * By default,
-   * [`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window.requestAnimationFrame)
-   * is used if available, otherwise
-   * [`setTimeout`](https://developer.mozilla.org/en-US/docs/Web/API/Window.setTimeout)
-   * is used.
    * @method shifty.Tweenable#setScheduleFunction
-   * @param {scheduleFunction} scheduleFunction The function to be
-   * used to schedule the next frame to be rendered.
+   * @param {scheduleFunction} scheduleFunction
+   * @deprecated Will be removed in favor of {@link shifty.Tweenable.setScheduleFunction} in 3.0.
    */
   setScheduleFunction(scheduleFunction) {
-    this._scheduleFunction = scheduleFunction;
+    Tweenable.setScheduleFunction(scheduleFunction);
   }
 
   /**
@@ -469,6 +461,21 @@ export class Tweenable {
     }
   }
 }
+
+/**
+ * Set a custom schedule function.
+ *
+ * By default,
+ * [`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window.requestAnimationFrame)
+ * is used if available, otherwise
+ * [`setTimeout`](https://developer.mozilla.org/en-US/docs/Web/API/Window.setTimeout)
+ * is used.
+ * @method shifty.Tweenable.setScheduleFunction
+ * @param {scheduleFunction} fn The function to be
+ * used to schedule the next frame to be rendered.
+ * @return {scheduleFunction} The function that was set.
+ */
+Tweenable.setScheduleFunction = fn => (scheduleFunction = fn);
 
 Tweenable.formulas = formulas;
 
