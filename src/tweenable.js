@@ -123,8 +123,8 @@ export const composeEasingObject = (
 const processQueue = () => {
   const now = Tweenable.now();
 
-  for (let i = tweenQueue.length; i >= 0; i--) {
-    const tween = tweenQueue[i];
+  for (let i = tweenQueue.length; i > 0; i--) {
+    const tween = tweenQueue[i - 1];
 
     if (!tween.isPlaying()) {
       continue;
@@ -172,6 +172,18 @@ const processQueue = () => {
 };
 /* eslint-enable no-unused-vars */
 
+/**
+ * Handles the update logic for one step of a tween.
+ * @param {number} [currentTimeOverride] Needed for accurate timestamp in
+ * shifty.Tweenable#seek.
+ * @private
+ */
+const timeoutHandler = () => {
+  DEFAULT_SCHEDULE_FUNCTION.call(root, timeoutHandler, UPDATE_TIME);
+
+  processQueue();
+};
+
 export class Tweenable {
   /**
    * @param {Object} [initialState={}] The values that the initial tween should
@@ -209,66 +221,6 @@ export class Tweenable {
       if (typeof filter !== 'undefined') {
         filter.apply(this, _filterArgs);
       }
-    }
-  }
-
-  /**
-   * Handles the update logic for one step of a tween.
-   * @param {number} [currentTimeOverride] Needed for accurate timestamp in
-   * shifty.Tweenable#seek.
-   * @private
-   */
-  _timeoutHandler(currentTimeOverride) {
-    if (!this.isPlaying()) {
-      return;
-    }
-
-    const { _currentState, _delay } = this;
-    let { _duration, _step, _targetState, _timestamp } = this;
-
-    const endTime = _timestamp + _delay + _duration;
-    let currentTime = Math.min(currentTimeOverride || Tweenable.now(), endTime);
-    const hasEnded = currentTime >= endTime;
-    const offset = _duration - (endTime - currentTime);
-
-    if (hasEnded) {
-      _step(_targetState, this._attachment, offset);
-      this.stop(true);
-    } else {
-      // This function needs to be .call-ed because it is a native method in
-      // some environments:
-      // http://stackoverflow.com/a/9678166
-      this._scheduleId = this._scheduleFunction.call(
-        root,
-        () => this._timeoutHandler(...arguments),
-        UPDATE_TIME
-      );
-
-      this._applyFilter('beforeTween');
-
-      // If the animation has not yet reached the start point (e.g., there was
-      // delay that has not yet completed), just interpolate the starting
-      // position of the tween.
-      if (currentTime < _timestamp + _delay) {
-        currentTime = 1;
-        _duration = 1;
-        _timestamp = 1;
-      } else {
-        _timestamp += _delay;
-      }
-
-      tweenProps(
-        currentTime,
-        _currentState,
-        this._originalState,
-        _targetState,
-        _duration,
-        _timestamp,
-        this._easing
-      );
-
-      this._applyFilter('afterTween');
-      _step(_currentState, this._attachment, offset);
     }
   }
 
@@ -401,7 +353,8 @@ export class Tweenable {
 
     this._isPaused = false;
     this._isTweening = true;
-    this._timeoutHandler();
+    // this.timeoutHandler();
+    tweenQueue.unshift(this);
 
     return this._promise;
   }
@@ -431,9 +384,9 @@ export class Tweenable {
 
       // FIXME: This breaks queueing/batching. Switch to shifting the _timestamp back.
       //
-      // If the animation is not running, call _timeoutHandler to make sure that
+      // If the animation is not running, call timeoutHandler to make sure that
       // any step handlers are run.
-      this._timeoutHandler(currentTime);
+      // this.timeoutHandler(currentTime);
 
       this.pause();
     }
@@ -462,7 +415,9 @@ export class Tweenable {
     this._isTweening = false;
     this._isPaused = false;
 
-    cancelTimer(this._scheduleId);
+    const index = tweenQueue.indexOf(this);
+    tweenQueue.splice(index, 1);
+    // cancelTimer(this._scheduleId);
 
     if (gotoEnd) {
       this._applyFilter('beforeTween');
@@ -559,3 +514,5 @@ export function tween(config = {}) {
 
   return promise;
 }
+
+timeoutHandler();
