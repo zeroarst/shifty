@@ -174,8 +174,12 @@ export const processQueue = () => {
  * shifty.Tweenable#seek.
  * @private
  */
-export const timeoutHandler = () => {
-  scheduleFunction.call(root, timeoutHandler, UPDATE_TIME);
+export const scheduleUpdate = () => {
+  if (!tweenQueue.length) {
+    return;
+  }
+
+  scheduleFunction.call(root, scheduleUpdate, UPDATE_TIME);
 
   processQueue();
 };
@@ -351,6 +355,15 @@ export class Tweenable {
     this._isPaused = false;
     this._isTweening = true;
     tweenQueue.unshift(this);
+
+    // If tweenQueue.length is 1 after the preceding .unshift, then the
+    // tweenQueue was previously empty and no update was scheduled. This
+    // ensures that the update loop is only running when there are tweens to
+    // process.
+    if (tweenQueue.length === 1) {
+      scheduleUpdate();
+    }
+
     processTween(this, currentTime);
 
     return this._promise;
@@ -379,7 +392,7 @@ export class Tweenable {
       this._isTweening = true;
       this._isPaused = false;
 
-      // If the animation is not running, call timeoutHandler to make sure that
+      // If the animation is not running, call scheduleUpdate to make sure that
       // any step handlers are run.
       processTween(this, currentTime);
 
@@ -516,5 +529,3 @@ export function tween(config = {}) {
 
   return promise;
 }
-
-timeoutHandler();
