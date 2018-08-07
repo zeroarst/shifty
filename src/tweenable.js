@@ -194,6 +194,7 @@ export class Tweenable {
   constructor(initialState = {}, config = undefined) {
     this._currentState = initialState;
     this._configured = false;
+    this._filters = [];
 
     // To prevent unnecessary calls to setConfig do not set default
     // configuration here.  Only set default configuration immediately before
@@ -209,11 +210,10 @@ export class Tweenable {
    * @private
    */
   _applyFilter(filterName) {
-    const { filters } = Tweenable;
     const { _filterArgs } = this;
 
-    for (const name in filters) {
-      const filter = filters[name][filterName];
+    for (const filterType of this._filters) {
+      const filter = filterType[filterName];
 
       if (typeof filter !== 'undefined') {
         filter.apply(this, _filterArgs);
@@ -285,6 +285,15 @@ export class Tweenable {
     this._targetState = { ..._currentState, ...this._targetState };
 
     this._easing = composeEasingObject(_currentState, easing);
+
+    const { filters } = Tweenable;
+    this._filters.length = 0;
+
+    for (const name in filters) {
+      if (filters[name].doesApply(_currentState)) {
+        this._filters.push(filters[name]);
+      }
+    }
 
     this._filterArgs = [
       _currentState,
