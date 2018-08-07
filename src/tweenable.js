@@ -152,7 +152,6 @@ const processTween = (tween, currentTime) => {
   }
 };
 
-/* eslint-disable no-unused-vars */
 export const processQueue = () => {
   const currentTime = Tweenable.now();
 
@@ -166,7 +165,6 @@ export const processQueue = () => {
     processTween(tween, currentTime);
   }
 };
-/* eslint-enable no-unused-vars */
 
 /**
  * Handles the update logic for one step of a tween.
